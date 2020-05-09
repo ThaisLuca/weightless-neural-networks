@@ -11,6 +11,7 @@ import pandas as pd
 import numpy as np
 import sys
 
+from collections import Counter
 from pandas import compat
 compat.PY3 = True
 
@@ -32,7 +33,9 @@ def preprocess(df):
 
 def main():
 
-	accuracy_train_scores = []
+	confusion_matrix_train_scores = []
+	confusion_matrix_validation_scores = []
+	confusion_matrix_test_scores = []
 
 	addressSize = 3     # number of addressing bits in the ram
 	ignoreZero  = False # optional; causes the rams to ignore the address 0
@@ -46,6 +49,7 @@ def main():
 	train, test = train_test_split(dataset, test_size=0.3)
 	X = preprocess(train.drop(['label'], axis=1)).values.tolist()
 	Y = train['label'].values.tolist()
+
 	X_test = preprocess(test.drop(['label'], axis=1)).values.tolist()
 	Y_test = test['label'].values.tolist()
 
@@ -64,9 +68,19 @@ def main():
 		# classify train data
 		out_train = wsd.classify(x_train)
 
-		print(confusion_matrix(y_train, out_train))
+		# classify validation data
+		out_val = wsd.classify(x_val)
 
-		return
+		confusion_matrix_train_scores.append(confusion_matrix(y_train, out_train))
+		confusion_matrix_validation_scores.append(confusion_matrix(y_val, out_val))
+
+		#classify test data
+		out_test = wsd.classify(X_test)
+
+		confusion_matrix_test_scores.append(confusion_matrix(Y_test, out_test))
+
+	mean_of_conf_matrix_train_arrays = np.mean(confusion_matrix_train_scores, axis=0)
+	print(mean_of_conf_matrix_train_arrays)
 
 
 if __name__ == "__main__":

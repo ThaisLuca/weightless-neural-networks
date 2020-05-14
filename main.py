@@ -37,7 +37,7 @@ def preprocess(df):
 def plot_heatmap(cm, title, filename):
 	df_cm = pd.DataFrame(cm, index = range(10), columns = range(10))
 	plt.figure(figsize = (10,7))
-	sn.heatmap(df_cm, annot=True)
+	sn.heatmap(df_cm, cmap="YlGnBu", annot=True)
 	plt.title(title)
 	plt.ylabel('Target Value')
 	plt.xlabel('Predicted Value')
@@ -52,7 +52,7 @@ def main():
 
 	addressSize = 3     # number of addressing bits in the ram
 	ignoreZero  = False # optional; causes the rams to ignore the address 0
-	n_splits = 2		# number of splits used in KFold
+	n_splits = 10		# number of splits used in KFold
 
 	# False by default for performance reasons,
 	# when True, WiSARD prints the progress of train() and classify()
@@ -83,7 +83,7 @@ def main():
 		#print("Test: ", Counter(Y_test))
 
 		# train using the input data
-		print("Training\n")
+		print("Training")
 		wsd.train(x_train,y_train)
 
 		# classify train data
@@ -108,6 +108,7 @@ def main():
 		confusion_matrix_test_scores += cm_test
 		
 		fold += 1
+		print('\n')
 
 	confusion_matrix_train_scores = np.divide(confusion_matrix_train_scores, n_splits)
 	confusion_matrix_validation_scores = np.divide(confusion_matrix_validation_scores, n_splits)

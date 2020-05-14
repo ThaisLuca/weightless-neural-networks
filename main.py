@@ -17,6 +17,7 @@ import seaborn as sn
 from collections import Counter
 from pandas import compat
 compat.PY3 = True
+pd.options.display.float_format = '{:.2f}'.format
 
 from sklearn.model_selection import train_test_split, KFold
 from sklearn.metrics import confusion_matrix
@@ -33,6 +34,15 @@ def preprocess(df):
 		df[column] = np.where(df[column] >= threshold, 1, 0)
 	return df
 
+def plot_heatmap(cm, title, filename):
+	df_cm = pd.DataFrame(cm, index = range(10), columns = range(10))
+	plt.figure(figsize = (10,7))
+	sn.heatmap(df_cm, annot=True)
+	plt.title(title)
+	plt.ylabel('Target Value')
+	plt.xlabel('Predicted Value')
+	plt.savefig('results/' + filename + '.pdf')
+	#plt.show()
 
 def main():
 
@@ -73,32 +83,39 @@ def main():
 		#print("Test: ", Counter(Y_test))
 
 		# train using the input data
+		print("Training\n")
 		wsd.train(x_train,y_train)
 
 		# classify train data
+		print("Train data classification")
 		out_train = wsd.classify(x_train)
+		cm_training = confusion_matrix(y_train, out_train)
+		cm_training = cm_training / cm_training.astype(np.float).sum(axis=1)
+		confusion_matrix_train_scores += cm_training
 
 		# classify validation data
-		#out_val = wsd.classify(x_val)
-
-		confusion_matrix_train_scores.append(confusion_matrix(y_train, out_train))
-		#confusion_matrix_validation_scores += np.matrix(confusion_matrix(y_val, out_val))
+		print("Validation data classification")
+		out_val = wsd.classify(x_val)
+		cm_validation = confusion_matrix(y_val, out_val)
+		cm_validation = cm_validation / cm_validation.astype(np.float).sum(axis=1)
+		confusion_matrix_validation_scores += cm_validation
 
 		#classify test data
-		#out_test = wsd.classify(X_test)
-
-		#confusion_matrix_test_scores += np.matrix(confusion_matrix(Y_test, out_test))
+		print("Test data classification")
+		out_test = wsd.classify(X_test)
+		cm_test = confusion_matrix(Y_test, out_test)
+		cm_test = cm_test / cm_test.astype(np.float).sum(axis=1)
+		confusion_matrix_test_scores += cm_test
+		
 		fold += 1
 
-	confusion_matrix_train_scores = np.mean(confusion_matrix_train_scores, axis=0)
-	#confusion_matrix_validation_scores = np.divide(confusion_matrix_validation_scores, n_splits)
-	#confusion_matrix_test_scores = np.divide(confusion_matrix_test_scores, n_splits)
+	confusion_matrix_train_scores = np.divide(confusion_matrix_train_scores, n_splits)
+	confusion_matrix_validation_scores = np.divide(confusion_matrix_validation_scores, n_splits)
+	confusion_matrix_test_scores = np.divide(confusion_matrix_test_scores, n_splits)
 
-	df_cm = pd.DataFrame(confusion_matrix_train_scores, index = range(10), columns = range(10))
-	plt.figure(figsize = (10,7))
-	sn.heatmap(df_cm, annot=True)
-	#plt.savefig('results/training_heatmap.pdf')
-	plt.show()
+	plot_heatmap(confusion_matrix_train_scores, title='Training', filename='training_heatmap')
+	plot_heatmap(confusion_matrix_validation_scores, title='Validation', filename='validation_heatmap')
+	plot_heatmap(confusion_matrix_test_scores, title='Test', filename='test_heatmap')
 
 if __name__ == "__main__":
 	sys.exit(main())

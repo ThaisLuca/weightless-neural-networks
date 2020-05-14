@@ -11,6 +11,9 @@ import pandas as pd
 import numpy as np
 import sys
 
+import matplotlib.pyplot as plt
+import seaborn as sn
+
 from collections import Counter
 from pandas import compat
 compat.PY3 = True
@@ -33,12 +36,13 @@ def preprocess(df):
 
 def main():
 
-	confusion_matrix_train_scores = []
-	confusion_matrix_validation_scores = []
-	confusion_matrix_test_scores = []
+	confusion_matrix_train_scores = np.zeros((10,10))
+	confusion_matrix_validation_scores = np.zeros((10,10))
+	confusion_matrix_test_scores = np.zeros((10,10))
 
 	addressSize = 3     # number of addressing bits in the ram
 	ignoreZero  = False # optional; causes the rams to ignore the address 0
+	n_splits = 2		# number of splits used in KFold
 
 	# False by default for performance reasons,
 	# when True, WiSARD prints the progress of train() and classify()
@@ -52,15 +56,21 @@ def main():
 
 	X_test = preprocess(test.drop(['label'], axis=1)).values.tolist()
 	Y_test = test['label'].values.tolist()
+	Y_test = [str(y) for y in Y_test]
 
 	# Define model
 	wsd = wp.Wisard(addressSize, ignoreZero=ignoreZero, verbose=verbose)
 
-	kf = KFold(n_splits=2)
+	kf = KFold(n_splits=n_splits)
+	fold = 1
 	for train_index, val_index in kf.split(X):
-		print("TRAIN:", len(train_index), "VALIDATION:", len(val_index))
+		print("FOLD:", fold)
 		x_train, x_val = [X[index] for index in train_index], [X[index] for index in val_index]
 		y_train, y_val = [str(Y[index]) for index in train_index], [str(Y[index]) for index in val_index]
+
+		#print("Training: ", Counter(y_train))
+		#print("Validation: ", Counter(y_val))
+		#print("Test: ", Counter(Y_test))
 
 		# train using the input data
 		wsd.train(x_train,y_train)
@@ -69,19 +79,26 @@ def main():
 		out_train = wsd.classify(x_train)
 
 		# classify validation data
-		out_val = wsd.classify(x_val)
+		#out_val = wsd.classify(x_val)
 
 		confusion_matrix_train_scores.append(confusion_matrix(y_train, out_train))
-		confusion_matrix_validation_scores.append(confusion_matrix(y_val, out_val))
+		#confusion_matrix_validation_scores += np.matrix(confusion_matrix(y_val, out_val))
 
 		#classify test data
-		out_test = wsd.classify(X_test)
+		#out_test = wsd.classify(X_test)
 
-		confusion_matrix_test_scores.append(confusion_matrix(Y_test, out_test))
+		#confusion_matrix_test_scores += np.matrix(confusion_matrix(Y_test, out_test))
+		fold += 1
 
-	mean_of_conf_matrix_train_arrays = np.mean(confusion_matrix_train_scores, axis=0)
-	print(mean_of_conf_matrix_train_arrays)
+	confusion_matrix_train_scores = np.mean(confusion_matrix_train_scores, axis=0)
+	#confusion_matrix_validation_scores = np.divide(confusion_matrix_validation_scores, n_splits)
+	#confusion_matrix_test_scores = np.divide(confusion_matrix_test_scores, n_splits)
 
+	df_cm = pd.DataFrame(confusion_matrix_train_scores, index = range(10), columns = range(10))
+	plt.figure(figsize = (10,7))
+	sn.heatmap(df_cm, annot=True)
+	#plt.savefig('results/training_heatmap.pdf')
+	plt.show()
 
 if __name__ == "__main__":
 	sys.exit(main())

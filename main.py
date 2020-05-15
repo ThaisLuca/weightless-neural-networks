@@ -2,8 +2,8 @@
 
 # Created by Thais Luca
 # Systems Engineering and Computer Science Program - COPPE, Federal University of Rio de Janeiro
-# Created at 05/01/2020
-# Last update at 05/01/2020
+# Created in 05/01/2020
+# Last update in 05/14/2020
 
 
 import wisardpkg as wp

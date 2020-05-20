@@ -84,7 +84,7 @@ def main():
 
 	addressSize = 3     # number of addressing bits in the ram
 	ignoreZero  = False # optional; causes the rams to ignore the address 0
-	n_splits = 2		# number of splits used in KFold
+	n_splits = 10		# number of splits used in KFold
 	threshold = 125
 
 	# False by default for performance reasons,

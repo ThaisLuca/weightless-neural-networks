@@ -92,7 +92,7 @@ def main():
 
 	addressSize = 40     # number of addressing bits in the ram
 	ignoreZero  = False # optional; causes the rams to ignore the address 0
-	n_splits = 10		# number of splits used for KFold
+	n_splits = 10		# number of splits used in KFold
 	threshold = 125
 
 	# False by default for performance reasons,
@@ -163,7 +163,7 @@ def main():
 	confusion_matrix_validation_scores = np.divide(confusion_matrix_validation_scores, n_splits)
 	confusion_matrix_test_scores = np.divide(confusion_matrix_test_scores, n_splits)
 
-	#train_accuracy_score /= n_splits
+	train_accuracy_score /= n_splits
 	validation_accuracy_score /= n_splits
 	test_accuracy_score /= n_splits
 

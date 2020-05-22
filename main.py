@@ -62,6 +62,14 @@ def save_matrix(cm, filename):
 	with open(filename, 'a') as file:
 		df.to_csv(file)
 
+def plot_line(df, column_x, column_y, xlabel, ylabel, title, filename):
+	plt.figure(figsize = (10,7))
+	plt.title(title)
+	plt.ylabel(ylabel)
+	plt.xlabel(xlabel)
+	plt.plot(df[column_x], df[column_y])
+	plt.savefig('results/' + filename + '.jpg')
+
 def plot_heatmap(cm, title, filename):
 	df_cm = pd.DataFrame(cm, index = range(10), columns = range(10))
 	plt.figure(figsize = (10,7))
@@ -69,7 +77,7 @@ def plot_heatmap(cm, title, filename):
 	plt.title(title)
 	plt.ylabel('Target Value')
 	plt.xlabel('Predicted Value')
-	plt.savefig('results/' + filename + '.pdf')
+	plt.savefig('results/' + filename + '.jpg')
 	#plt.show()
 
 def main():
@@ -82,9 +90,9 @@ def main():
 	validation_accuracy_score = 0
 	test_accuracy_score = 0
 
-	addressSize = 3     # number of addressing bits in the ram
+	addressSize = 40     # number of addressing bits in the ram
 	ignoreZero  = False # optional; causes the rams to ignore the address 0
-	n_splits = 2		# number of splits used in KFold
+	n_splits = 10		# number of splits used for KFold
 	threshold = 125
 
 	# False by default for performance reasons,
@@ -155,7 +163,7 @@ def main():
 	confusion_matrix_validation_scores = np.divide(confusion_matrix_validation_scores, n_splits)
 	confusion_matrix_test_scores = np.divide(confusion_matrix_test_scores, n_splits)
 
-	train_accuracy_score /= n_splits
+	#train_accuracy_score /= n_splits
 	validation_accuracy_score /= n_splits
 	test_accuracy_score /= n_splits
 

@@ -9,7 +9,7 @@
 import wisardpkg as wp
 import pandas as pd
 import numpy as np
-import sys
+import sys, os
 
 import matplotlib.pyplot as plt
 import seaborn as sn
@@ -45,30 +45,34 @@ def cm2df(cm, labels):
     return df
 
 def save_accuracy(threshold, addressSize, train_accuracy_score, validation_accuracy_score, test_accuracy_score):
+
+	train_accuracy_score_mean = np.mean(train_accuracy_score, axis=0)
+	validation_accuracy_score_mean = np.mean(validation_accuracy_score, axis=0)
+	test_accuracy_score_mean = np.mean(test_accuracy_score, axis=0)
+
+	train_accuracy_score_std = np.std(train_accuracy_score)
+	validation_accuracy_score_std = np.std(validation_accuracy_score)
+	test_accuracy_score_std = np.std(test_accuracy_score)
+
 	matrix = {}
 	matrix['threshold'] = [threshold]
 	matrix['addressSize'] = [addressSize]
-	matrix['train_accuracy'] = [train_accuracy_score]
-	matrix['validation_accuracy'] = [validation_accuracy_score]
-	matrix['test_accuracy'] = [test_accuracy_score]
+	matrix['train_accuracy_mean'] = [train_accuracy_score_mean]
+	matrix['validation_accuracy_mean'] = [validation_accuracy_score_mean]
+	matrix['test_accuracy_mean'] = [test_accuracy_score_mean]
+	matrix['train_accuracy_std'] = [train_accuracy_score_std]
+	matrix['validation_accuracy_std'] = [validation_accuracy_score_std]
+	matrix['test_accuracy_std'] = [test_accuracy_score_std]
 
 	result = pd.DataFrame(matrix)
 	with open('results/accuracy.csv', 'a') as file:
-		result.to_csv(file, index=False, header=False)
+		result.to_csv(file, index=False, header=True)
 
 def save_matrix(cm, filename):
 	df = cm2df(cm, range(10))
 
 	with open(filename, 'a') as file:
 		df.to_csv(file)
-
-def plot_line(df, column_x, column_y, xlabel, ylabel, title, filename):
-	plt.figure(figsize = (10,7))
-	plt.title(title)
-	plt.ylabel(ylabel)
-	plt.xlabel(xlabel)
-	plt.plot(df[column_x], df[column_y])
-	plt.savefig('results/' + filename + '.jpg')
 
 def plot_heatmap(cm, title, filename):
 	df_cm = pd.DataFrame(cm, index = range(10), columns = range(10))
@@ -86,9 +90,9 @@ def main():
 	confusion_matrix_validation_scores = np.zeros((10,10))
 	confusion_matrix_test_scores = np.zeros((10,10))
 
-	train_accuracy_score = 0 
-	validation_accuracy_score = 0
-	test_accuracy_score = 0
+	train_accuracy_score = [] 
+	validation_accuracy_score = []
+	test_accuracy_score = []
 
 	addressSize = 40     # number of addressing bits in the ram
 	ignoreZero  = False # optional; causes the rams to ignore the address 0
@@ -136,7 +140,8 @@ def main():
 		cm_training = confusion_matrix(y_train, out_train)
 		cm_training = cm_training / cm_training.astype(np.float).sum(axis=1)
 		confusion_matrix_train_scores += cm_training
-		train_accuracy_score += accuracy_score(y_train, out_train)
+		train_accuracy_score.append(accuracy_score(y_train, out_train))
+
 
 		# classify validation data
 		print("Validation data classification")
@@ -145,7 +150,7 @@ def main():
 		cm_validation = confusion_matrix(y_val, out_val)
 		cm_validation = cm_validation / cm_validation.astype(np.float).sum(axis=1)
 		confusion_matrix_validation_scores += cm_validation
-		validation_accuracy_score + accuracy_score(y_val, out_val)
+		validation_accuracy_score.append(accuracy_score(y_val, out_val))
 
 		#classify test data
 		print("Test data classification")
@@ -154,7 +159,7 @@ def main():
 		cm_test = confusion_matrix(Y_test, out_test)
 		cm_test = cm_test / cm_test.astype(np.float).sum(axis=1)
 		confusion_matrix_test_scores += cm_test
-		test_accuracy_score += accuracy_score(Y_test, out_test)
+		test_accuracy_score.append(accuracy_score(Y_test, out_test))
 		
 		fold += 1
 		print('\n')
@@ -163,19 +168,19 @@ def main():
 	confusion_matrix_validation_scores = np.divide(confusion_matrix_validation_scores, n_splits)
 	confusion_matrix_test_scores = np.divide(confusion_matrix_test_scores, n_splits)
 
-	train_accuracy_score /= n_splits
-	validation_accuracy_score /= n_splits
-	test_accuracy_score /= n_splits
-
 	save_accuracy(threshold, addressSize, train_accuracy_score, validation_accuracy_score, test_accuracy_score)
 
 	plot_heatmap(confusion_matrix_train_scores, title='Training', filename='training_heatmap')
 	plot_heatmap(confusion_matrix_validation_scores, title='Validation', filename='validation_heatmap')
 	plot_heatmap(confusion_matrix_test_scores, title='Test', filename='test_heatmap')
 
-	save_matrix(confusion_matrix_train_scores, 'results/training_confusion_matrix.csv')
-	save_matrix(confusion_matrix_validation_scores, 'results/validation_confusion_matrix.csv')
-	save_matrix(confusion_matrix_test_scores, 'results/test_confusion_matrix.csv')
+	path = 'results/threshold_' + str(threshold) + 'addressSize_' + str(addressSize)
+	if(not os.path.isdir(path)):
+		os.mkdir(path)
+
+	save_matrix(confusion_matrix_train_scores, path + '/training_confusion_matrix.csv')
+	save_matrix(confusion_matrix_validation_scores,  path + '/validation_confusion_matrix.csv')
+	save_matrix(confusion_matrix_test_scores,  path + '/test_confusion_matrix.csv')
 
 if __name__ == "__main__":
 	sys.exit(main())

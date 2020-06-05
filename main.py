@@ -3,7 +3,7 @@
 # Created by Thais Luca
 # Systems Engineering and Computer Science Program - COPPE, Federal University of Rio de Janeiro
 # Created in 05/01/2020
-# Last update in 05/14/2020
+# Last update in 06/05/2020
 
 
 import wisardpkg as wp
@@ -84,7 +84,7 @@ def plot_heatmap(cm, title, filename):
 	plt.savefig('results/' + filename + '.jpg')
 	#plt.show()
 
-def main():
+def main(input_threshold, input_addressSize):
 
 	confusion_matrix_train_scores = np.zeros((10,10))
 	confusion_matrix_validation_scores = np.zeros((10,10))
@@ -94,10 +94,10 @@ def main():
 	validation_accuracy_score = []
 	test_accuracy_score = []
 
-	addressSize = 40     # number of addressing bits in the ram
-	ignoreZero  = False # optional; causes the rams to ignore the address 0
-	n_splits = 10		# number of splits used in KFold
-	threshold = 125
+	addressSize = input_addressSize     # number of addressing bits in the ram
+	ignoreZero  = False 				# optional; causes the rams to ignore the address 0
+	n_splits = 10						# number of splits used in KFold
+	threshold = input_threshold
 
 	# False by default for performance reasons,
 	# when True, WiSARD prints the progress of train() and classify()
@@ -170,17 +170,14 @@ def main():
 
 	save_accuracy(threshold, addressSize, train_accuracy_score, validation_accuracy_score, test_accuracy_score)
 
-	plot_heatmap(confusion_matrix_train_scores, title='Training', filename='training_heatmap')
-	plot_heatmap(confusion_matrix_validation_scores, title='Validation', filename='validation_heatmap')
-	plot_heatmap(confusion_matrix_test_scores, title='Test', filename='test_heatmap')
-
 	path = 'results/threshold_' + str(threshold) + 'addressSize_' + str(addressSize)
 	if(not os.path.isdir(path)):
 		os.mkdir(path)
 
+	plot_heatmap(confusion_matrix_train_scores, title='Training', filename=path + '/training_heatmap')
+	plot_heatmap(confusion_matrix_validation_scores, title='Validation', filename=path + '/validation_heatmap')
+	plot_heatmap(confusion_matrix_test_scores, title='Test', filename=path + '/test_heatmap')
+
 	save_matrix(confusion_matrix_train_scores, path + '/training_confusion_matrix.csv')
 	save_matrix(confusion_matrix_validation_scores,  path + '/validation_confusion_matrix.csv')
 	save_matrix(confusion_matrix_test_scores,  path + '/test_confusion_matrix.csv')
-
-if __name__ == "__main__":
-	sys.exit(main())

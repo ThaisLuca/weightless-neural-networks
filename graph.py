@@ -14,11 +14,7 @@ def plot_line(column_x, xlabel, ylabel, title, filename):
 	plt.errorbar(df[column_x], df['train_accuracy_mean'], df['train_accuracy_std'], linestyle='None', marker='^', color='red', label='Treinamento')
 	plt.errorbar(df[column_x], df['validation_accuracy_mean'], df['validation_accuracy_std'], linestyle='None', marker='^', color='green', label='Validaao')
 	plt.errorbar(df[column_x], df['test_accuracy_mean'], df['test_accuracy_std'], linestyle='None', marker='^', color='blue', label='Teste')
-
-	#plt.plot(df[column_x], df['train_accuracy'], color='red', label='Treinamento')
-	#plt.plot(df[column_x], df['validation_accuracy'], color='blue', label='Validacao')
-	#plt.plot(df[column_x], df['test_accuracy'], color='orange', label='Teste')
-
+	
 	plt.legend(loc='lower left')
 
 	plt.savefig('results/' + filename + '.jpg')

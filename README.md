@@ -1,2 +1,2 @@
 # weightless-neural-networks
-Repositório para trabalhos da disciplina de Redes Neurais sem Peso ministrada no Programa de Engenharia de Sistemas e Computação (PESC), oferecida pela COPPE na Universidade Federal do Rio de Janeiro (UFRJ).
+Uso de Redes Neurais sem Peso para classificação dos exemplos do conjunto de dados MNIST (em formato CSV), pré-processados usando diferentes valores de threshold para transformação para dados categóricos, para treinar uma rede WiSARD. Trabalho apresentado na disciplina Redes Neurais sem Peso ministrada no Programa de Engenharia de Sistemas e Computação (PESC), oferecida pela COPPE na Universidade Federal do Rio de Janeiro (UFRJ).

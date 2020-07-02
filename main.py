@@ -118,7 +118,7 @@ def main(input_threshold, input_addressSize):
 	wsd = wp.Wisard(addressSize, ignoreZero=ignoreZero, verbose=verbose)
 
 	kf = KFold(n_splits=n_splits, shuffle=True)
-	fold = 1
+	fold = 10
 	for train_index, val_index in kf.split(X):
 		print("FOLD:", fold)
 		print("TRAIN: {} VALIDATION: {}".format(len(train_index), len(val_index)))
